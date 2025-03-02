@@ -1,10 +1,6 @@
 from flask import Flask, jsonify, request
 from datetime import datetime
 
-#    -----http request ----> [{request} ]
-#
-#
-# global list [dish, dish ] <-
 app = Flask(__name__)  # flask application
 
 posts = [
@@ -33,19 +29,42 @@ posts = [
 post_id_counter = 3
 
 
+# GET all posts with pagination
 @app.get('/posts')
 def get_posts():
-    print(request.remote_addr)
-    print(request.headers["User-Agent"])
-    return jsonify(posts)
+    # Get the 'page' and 'per_page' query parameters from the request
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
+
+    # Calculate the starting and ending indices for the slice
+    start = (page - 1) * per_page
+    end = start + per_page
+
+    # Get the posts slice for the current page
+    paginated_posts = posts[start:end]
+
+    # Calculate metadata
+    total_posts = len(posts)
+    total_pages = (total_posts + per_page - 1) // per_page  # Round up to get total pages
+
+    # Return the paginated posts along with metadata
+    return jsonify({
+        "posts": paginated_posts,
+        "pagination": {
+            "current_page": page,
+            "per_page": per_page,
+            "total_posts": total_posts,
+            "total_pages": total_pages
+        }
+    })
 
 @app.get('/post/<id>')
 def get_post_by_id(id):
     id = int(id)
     for post in posts:
         if post["id"] == id:
-            return jsonify(post), 203
-    return "not found", 404
+            return jsonify(post), 200
+    return jsonify({"success": False, "message": "Post not found"}), 404
 
 
 @app.route('/posts', methods=['POST'])
@@ -100,6 +119,32 @@ def update_post(post_id):
             }), 200
 
     return jsonify({"success": False, "message": "Post not found"}), 404
+
+
+@app.route('/posts/<int:id>', methods=['DELETE'])
+def delete_post(id):
+    # Search for the post by ID
+    post_to_delete = None
+    for post in posts:
+        if post['id'] == id:
+            post_to_delete = post
+            break
+
+    if post_to_delete is None:
+        # Post not found, return 404 error with a message
+        return jsonify({
+            "success": False,
+            "message": "Post not found"
+        }), 404
+
+    # Remove the post from the list (simulate deletion)
+    posts.remove(post_to_delete)
+
+    # Return success message
+    return jsonify({
+        "success": True,
+        "message": "Post deleted successfully"
+    }), 200
 
 
 if __name__ == '__main__':
