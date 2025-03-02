@@ -92,6 +92,8 @@ def get_post_by_id(id):
 
 @app.route('/posts', methods=['POST'])
 def create_post():
+    if not check_authentication():
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
     global post_id_counter
 
     # Get JSON data from request
