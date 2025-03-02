@@ -126,6 +126,8 @@ def create_post():
 
 @app.route('/posts/<int:post_id>', methods=['PUT'])
 def update_post(post_id):
+    if not check_authentication():
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
     data = request.get_json()
     if not data:
         return jsonify({"success": False, "message": "Invalid JSON data"}), 400
@@ -148,6 +150,8 @@ def update_post(post_id):
 
 @app.route('/posts/<int:id>', methods=['DELETE'])
 def delete_post(id):
+    if not check_authentication():
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
     # Search for the post by ID
     post_to_delete = None
     for post in posts:
