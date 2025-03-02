@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request
 from datetime import datetime
+import base64
 
 app = Flask(__name__)  # flask application
 
@@ -27,6 +28,28 @@ posts = [
     }
 ]
 post_id_counter = 3
+USERNAME = 'admin'
+PASSWORD = 'password123'
+
+def check_authentication():
+    """Check the Authorization header for valid Basic Authentication credentials."""
+    auth = request.headers.get('Authorization')
+    if not auth:
+        return False  # No authentication header
+
+    parts = auth.split()
+    if parts[0].lower() != 'basic':
+        return False  # Not Basic authentication
+
+    # Decode the base64 credentials
+    try:
+        decoded = base64.b64decode(parts[1]).decode('utf-8')
+        username, password = decoded.split(':', 1)
+    except (IndexError, ValueError):
+        return False  # Invalid base64 encoding or incorrect format
+
+    # Check if username and password match
+    return username == USERNAME and password == PASSWORD
 
 
 # GET all posts with pagination
