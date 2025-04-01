@@ -5,7 +5,7 @@ $loginUri = "http://localhost:5000/api/v1/auth/login"
 $loginBody = '{
   "aws_access_key_id": "<Key_ID>",
   "aws_secret_access_key": "<Key_Secret>",
-  "aws_region": "us-east-1"
+  "aws_region": "<Region>"
 }'
 $loginHeaders = @{ "Content-Type" = "application/json" }
 
